@@ -7,6 +7,14 @@ import com.cinema.entities.Seat;
 
 public class ReserveSeatImpl implements ReserveSeat {
 
+    private static ReserveSeatImpl instance;
+
+    public static ReserveSeatImpl getInstance() {
+        if (instance == null) {
+            instance = new ReserveSeatImpl();
+        }
+        return instance;
+    }
     @Override
     public boolean reserveSeat(Client client, Seance seance, Seat seat) {
         if(isSeatTaken(seance, seat)){

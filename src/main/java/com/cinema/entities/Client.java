@@ -2,6 +2,7 @@ package com.cinema.entities;
 
 import lombok.*;
 
+import java.io.Serializable;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -9,7 +10,8 @@ import java.util.List;
 @Getter
 @ToString
 @EqualsAndHashCode
-public class Client {
+@Builder
+public class Client implements Serializable {
     private final String fname;
     private final String lname;
     private final String email;
