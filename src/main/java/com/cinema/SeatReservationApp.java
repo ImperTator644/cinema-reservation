@@ -6,19 +6,37 @@ import com.cinema.entities.AgeRestriction;
 import com.cinema.entities.Client;
 import com.cinema.entities.Seance;
 import com.cinema.entities.Seat;
+import com.cinema.services.SerializationService;
+import com.cinema.services.serialization.SerializationServiceImpl;
 
-import java.io.*;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
 
 public class SeatReservationApp {
-    static ArrayList<Seance> seances;
-    static ArrayList<Client> clients;
-    static String seancesFileName = "seances.txt";
-    static String clientsFileName = "clients.txt";
-    public static void main(String[] args) throws IOException, ClassNotFoundException {
-        createSeances();
-        createClients();
+    private static List<Seance> seances;
+    private static List<Client> clients;
+    private static final String SEANCES_FILE_NAME = "seances.txt";
+    private static final String CLIENTS_FILE_NAME = "clients.txt";
+
+    public static void main(String[] args) {
+        SerializationService serializationService = SerializationServiceImpl.getInstance();
+
+        try {
+            seances = (ArrayList<Seance>) serializationService.deserialize(SEANCES_FILE_NAME);
+        } catch (IOException | ClassNotFoundException e) {
+            System.out.printf("Deserialization failed with message %s", e.getMessage());
+            System.out.print("\nCreating new List of Seances");
+            createSeances();
+        }
+
+        try {
+            clients = (ArrayList<Client>) serializationService.deserialize(CLIENTS_FILE_NAME);
+        } catch (IOException | ClassNotFoundException e) {
+            System.out.printf("Deserialization failed with message %s", e.getMessage());
+            System.out.print("\nCreating new List of Clients");
+            createClients();
+        }
 
         ReserveSeat reserveSeat = ReserveSeatImpl.getInstance();
         reserveSeat.reserveSeat(clients.get(0), seances.get(0), new Seat('A', 13));
@@ -26,13 +44,12 @@ public class SeatReservationApp {
         reserveSeat.reserveSeat(clients.get(2), seances.get(2), new Seat('C', 15));
         reserveSeat.reserveSeat(clients.get(3), seances.get(3), new Seat('D', 16));
 
-        serialize(seances, seancesFileName);
-        seances.clear();
-        seances = (ArrayList<Seance>) deserialize(seancesFileName);
-
-        serialize(clients, clientsFileName);
-        clients.clear();
-        clients = (ArrayList<Client>) deserialize(clientsFileName);
+        try {
+            serializationService.serialize(seances, SEANCES_FILE_NAME);
+            serializationService.serialize(clients, CLIENTS_FILE_NAME);
+        } catch (IOException e) {
+            System.out.printf("Serialization failed with message %s ", e.getMessage());
+        }
     }
 
     private static void createSeances() {
@@ -57,7 +74,7 @@ public class SeatReservationApp {
                 .dateTime(LocalDateTime.now())
                 .ageRestriction(AgeRestriction.TEENAGER)
                 .build());
-        for(Seance s: seances) {
+        for (Seance s : seances) {
             initializeSeance(s);
         }
     }
@@ -94,46 +111,6 @@ public class SeatReservationApp {
                 .build());
     }
 
-    private static void serialize(Object obj, String filename) throws IOException {
-        System.out.println("Serializing data: ");
-        System.out.println(obj);
-        FileOutputStream fos = new FileOutputStream(filename);
-        BufferedOutputStream bos = new BufferedOutputStream(fos);
-        ObjectOutputStream oos = new ObjectOutputStream(bos);
-        oos.writeObject(obj);
-        oos.close();
-        fos.close();
-    }
-
-    private static Object deserialize(String filename) throws IOException, ClassNotFoundException {
-        FileInputStream fis = new FileInputStream(filename);
-        BufferedInputStream bis = new BufferedInputStream(fis);
-        ObjectInputStream ois = new ObjectInputStream(bis);
-        Object obj = ois.readObject();
-        System.out.println("Deserialized data: ");
-        System.out.println(obj);
-        ois.close();
-        return obj;
-    }
-
-    private static Seance initializeSeance(String title, LocalDateTime dateTime, AgeRestriction ageRestriction){
-        int rowCount = 6;
-        int columnCount = 16;
-        char maxRow = 'F';
-        int maxNumber = 16;
-        Seance tempSeance = new Seance(title, dateTime, ageRestriction);
-        Map<Integer, Boolean> columnMap = new HashMap<>(columnCount);
-        Map<Character, Map<Integer, Boolean>> seatMap = new HashMap<>(rowCount);
-        tempSeance.setSeats(seatMap);
-        for(char row = 'A'; row <= maxRow; row++){
-            tempSeance.getSeats().put(row, columnMap);
-            for(int number = 1; number <= maxNumber; number++){
-                tempSeance.getSeats().get(row).put(number, false);
-            }
-        }
-        return tempSeance;
-    }
-
     private static void initializeSeance(Seance seance) {
         int rowCount = 6;
         int columnCount = 16;
@@ -142,9 +119,9 @@ public class SeatReservationApp {
         Map<Integer, Boolean> columnMap = new HashMap<>(columnCount);
         Map<Character, Map<Integer, Boolean>> seatMap = new HashMap<>(rowCount);
         seance.setSeats(seatMap);
-        for(char row = 'A'; row <= maxRow; row++){
+        for (char row = 'A'; row <= maxRow; row++) {
             seance.getSeats().put(row, columnMap);
-            for(int number = 1; number <= maxNumber; number++){
+            for (int number = 1; number <= maxNumber; number++) {
                 seance.getSeats().get(row).put(number, false);
             }
         }
