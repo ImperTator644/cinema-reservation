@@ -4,10 +4,12 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
 
+import java.io.Serializable;
+
 @AllArgsConstructor
 @ToString
 @Getter
-public class Seat {
+public class Seat implements Serializable {
     private char row;
     private int number;
 }

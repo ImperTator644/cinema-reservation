@@ -1,17 +1,17 @@
 package com.cinema.entities;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Map;
 
 @RequiredArgsConstructor
+@AllArgsConstructor
 @Getter
 @ToString
-public class Seance {
+@Builder
+public class Seance implements Serializable {
     private final String title;
     private final LocalDateTime dateTime;
     private final AgeRestriction ageRestriction;
